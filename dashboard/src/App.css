@@ -1,0 +1,434 @@
+/* ============================================================
+   FILE: dashboard/src/App.css
+   PURPOSE: Professional medical-grade styling for PharmaSafe
+   Color palette: Navy + Teal + White + Red alerts
+   ============================================================ */
+
+/* ── RESET & BASE ─────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #F0F4F8;
+  color: #1E293B;
+  min-height: 100vh;
+}
+
+/* ── APP LAYOUT ───────────────────────────────────────────── */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+.app-header {
+  background: linear-gradient(135deg, #1B4F8A 0%, #0D9488 100%);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 36px;
+}
+
+.app-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.app-header p {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.role-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Role badge colors */
+.role-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+.role-pharmacist  { background: #D1FAE5; color: #065F46; }
+.role-icu-doctor  { background: #DBEAFE; color: #1D4ED8; }
+.role-nurse       { background: #FCE7F3; color: #9D174D; }
+.role-admin       { background: #F3E8FF; color: #6B21A8; }
+
+/* ── TAB NAVIGATION ───────────────────────────────────────── */
+.tab-nav {
+  background: white;
+  border-bottom: 2px solid #E2E8F0;
+  display: flex;
+  padding: 0 32px;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748B;
+  transition: all 0.2s;
+}
+
+.tab:hover { color: #1B4F8A; }
+
+.tab.active {
+  color: #1B4F8A;
+  border-bottom-color: #1B4F8A;
+  font-weight: 700;
+}
+
+/* ── MAIN CONTENT ─────────────────────────────────────────── */
+.app-main {
+  flex: 1;
+  padding: 24px 32px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── CARD ─────────────────────────────────────────────────── */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid #E2E8F0;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1B4F8A;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #64748B;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ── INPUT ROW ────────────────────────────────────────────── */
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.drug-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.drug-input:focus {
+  outline: none;
+  border-color: #1B4F8A;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────── */
+.btn-primary {
+  background: #1B4F8A;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) { background: #163F6F; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-secondary {
+  background: white;
+  color: #1B4F8A;
+  border: 2px solid #1B4F8A;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-check {
+  background: #0D9488;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 16px;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.btn-check:hover:not(:disabled) { background: #0A7C74; }
+.btn-check:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-danger-sm {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #DC2626;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* ── RESULT BOX ───────────────────────────────────────────── */
+.result-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.severity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.check-time {
+  color: #94A3B8;
+  font-size: 12px;
+}
+
+.no-interactions {
+  color: #16A34A;
+  font-weight: 600;
+  text-align: center;
+  padding: 16px;
+}
+
+/* ── TABLES ───────────────────────────────────────────────── */
+.interaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.interaction-table th {
+  background: #1B4F8A;
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.interaction-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #E2E8F0;
+  vertical-align: top;
+}
+
+.interaction-table tr:hover { filter: brightness(0.97); }
+
+.description-cell  { max-width: 280px; font-size: 12px; color: #475569; }
+.recommendation-cell { max-width: 200px; font-size: 12px; font-weight: 600; }
+
+.med-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.med-table th {
+  background: #F1F5F9;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.med-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+/* ── BOXES ────────────────────────────────────────────────── */
+.error-box {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.warning-box {
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  color: #92400E;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.alert-status {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #1D4ED8;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* ── PATIENT PANEL ────────────────────────────────────────── */
+.patient-panel {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+}
+
+.patient-list {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid #E2E8F0;
+  height: fit-content;
+}
+
+.patient-list h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1B4F8A;
+  margin-bottom: 12px;
+}
+
+.patient-card {
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  margin-bottom: 6px;
+  transition: all 0.15s;
+  background: #F8FAFC;
+}
+
+.patient-card:hover { border-color: #93C5FD; background: #EFF6FF; }
+.patient-card.selected { border-color: #1B4F8A; background: #DBEAFE; }
+
+.patient-name { font-weight: 600; font-size: 14px; color: #1E293B; }
+.patient-meta { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+.patient-detail {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid #E2E8F0;
+}
+
+.patient-detail h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1B4F8A;
+  margin-bottom: 8px;
+}
+
+.patient-detail h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  margin: 16px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.patient-detail p {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.add-med-form { margin-top: 12px; }
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.form-row input {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 10px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13px;
+  padding: 20px 10px;
+  font-style: italic;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────── */
+.app-footer {
+  background: #1B4F8A;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-main { padding: 16px; }
+  .patient-panel { grid-template-columns: 1fr; }
+  .input-row { flex-direction: column; }
+  .form-row { flex-direction: column; }
+  .app-header { flex-direction: column; gap: 12px; text-align: center; }
+  .tab-nav { padding: 0 16px; }
+}

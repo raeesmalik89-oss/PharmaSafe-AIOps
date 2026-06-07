@@ -1,0 +1,323 @@
+# ============================================================
+# FILE: k8s/deployment.yaml
+# PURPOSE: Kubernetes deployment for PharmaSafe-AIOps
+#          Deploys FastAPI backend + React dashboard
+#          Runs on K3s (lightweight Kubernetes)
+# ============================================================
+
+---
+# ── NAMESPACE ─────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pharmasafe
+  labels:
+    app: pharmasafe-aiops
+
+---
+# ── CONFIGMAP: Non-secret environment variables ───────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pharmasafe-config
+  namespace: pharmasafe
+data:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "pharmasafe"
+  KAFKA_BROKER: "kafka-service:9092"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+
+---
+# ── SECRET: Sensitive credentials ─────────────────────────────
+# In production: use kubectl create secret or Vault
+# DO NOT commit real values to GitHub
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pharmasafe-secrets
+  namespace: pharmasafe
+type: Opaque
+stringData:
+  DB_USER:             "pharmasafe"
+  DB_PASSWORD:         "pharmasafe123"
+  TWILIO_ACCOUNT_SID:  "YOUR_TWILIO_SID"
+  TWILIO_AUTH_TOKEN:   "YOUR_TWILIO_TOKEN"
+  TWILIO_PHONE:        "+1234567890"
+  PHARMACIST_PHONE:    "+923001234567"
+  PHARMACIST_EMAIL:    "pharmacist@hospital.com"
+  SMTP_USER:           "your-gmail@gmail.com"
+  SMTP_PASS:           "your-app-password"
+
+---
+# ── DEPLOYMENT: FastAPI Backend ────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pharmasafe-api
+  namespace: pharmasafe
+  labels:
+    app: pharmasafe-api
+spec:
+  replicas: 2                    # 2 instances for high availability
+  selector:
+    matchLabels:
+      app: pharmasafe-api
+  template:
+    metadata:
+      labels:
+        app: pharmasafe-api
+    spec:
+      containers:
+        - name: pharmasafe-api
+          image: mraees1989/pharmasafe-aiops:latest   # Your DockerHub image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            # Non-secret config from ConfigMap
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pharmasafe-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pharmasafe-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pharmasafe-config
+                  key: DB_NAME
+            - name: KAFKA_BROKER
+              valueFrom:
+                configMapKeyRef:
+                  name: pharmasafe-config
+                  key: KAFKA_BROKER
+            # Secrets
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: DB_PASSWORD
+            - name: TWILIO_ACCOUNT_SID
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: TWILIO_ACCOUNT_SID
+            - name: TWILIO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: TWILIO_AUTH_TOKEN
+            - name: PHARMACIST_PHONE
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: PHARMACIST_PHONE
+            - name: PHARMACIST_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: PHARMACIST_EMAIL
+            - name: SMTP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pharmasafe-config
+                  key: SMTP_HOST
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: SMTP_USER
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: pharmasafe-secrets
+                  key: SMTP_PASS
+          # Kubernetes health probes (same pattern as CardioWatch)
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+# ── SERVICE: Expose FastAPI via NodePort ───────────────────────
+# NodePort lets you access the API via: http://<EC2-IP>:30392
+apiVersion: v1
+kind: Service
+metadata:
+  name: pharmasafe-api-service
+  namespace: pharmasafe
+spec:
+  type: NodePort
+  selector:
+    app: pharmasafe-api
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30392      # Access at http://<your-ip>:30392
+
+---
+# ── DEPLOYMENT: PostgreSQL Database ───────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: pharmasafe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "pharmasafe"
+            - name: POSTGRES_USER
+              value: "pharmasafe"
+            - name: POSTGRES_PASSWORD
+              value: "pharmasafe123"
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          emptyDir: {}    # For production: use PersistentVolumeClaim
+
+---
+# ── SERVICE: PostgreSQL ────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: pharmasafe
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+# ── DEPLOYMENT: Zookeeper (required by Kafka) ─────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: pharmasafe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:7.4.0
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_TICK_TIME
+              value: "2000"
+
+---
+# ── SERVICE: Zookeeper ─────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: pharmasafe
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - port: 2181
+      targetPort: 2181
+
+---
+# ── DEPLOYMENT: Apache Kafka ───────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: pharmasafe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.4.0
+          ports:
+            - containerPort: 9092
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:2181"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-service:9092"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+
+---
+# ── SERVICE: Kafka ─────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: pharmasafe
+spec:
+  selector:
+    app: kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
